@@ -2,6 +2,7 @@
 const form = document.getElementById('transaction-form');
 const descriptionInput = document.getElementById('description');
 const amountInput = document.getElementById('amount');
+const categorySelect = document.getElementById('category');
 const typeSelect = document.getElementById('type');
 const transactionList = document.getElementById('transaction-list');
 
@@ -9,17 +10,16 @@ const totalBalanceEl = document.getElementById('total-balance');
 const totalIncomeEl = document.getElementById('total-income');
 const totalExpenseEl = document.getElementById('total-expense');
 
-// 1. Fetch saved transactions from LocalStorage (or default to empty list)
+// Fetch saved transactions from LocalStorage
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-// 2. Function to save current transactions array to LocalStorage
+// Save to LocalStorage
 function updateLocalStorage() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
-// 3. Function to update UI and recalculate totals
+// Render UI & recalculated totals
 function updateUI() {
-    // Clear current list on screen
     transactionList.innerHTML = '';
 
     let totalIncome = 0;
@@ -33,6 +33,7 @@ function updateUI() {
             totalIncome += amount;
             row.innerHTML = `
                 <td>${transaction.description}</td>
+                <td><small>${transaction.category || 'General'}</small></td>
                 <td><span class="badge-income">Income</span></td>
                 <td class="badge-income">+₹${amount.toFixed(2)}</td>
                 <td><button class="btn-delete" onclick="deleteTransaction(${index})">Delete</button></td>
@@ -41,6 +42,7 @@ function updateUI() {
             totalExpense += amount;
             row.innerHTML = `
                 <td>${transaction.description}</td>
+                <td><small>${transaction.category || 'General'}</small></td>
                 <td><span class="badge-expense">Expense</span></td>
                 <td class="badge-expense">-₹${amount.toFixed(2)}</td>
                 <td><button class="btn-delete" onclick="deleteTransaction(${index})">Delete</button></td>
@@ -50,48 +52,43 @@ function updateUI() {
         transactionList.appendChild(row);
     });
 
-    // Update summary cards
     const balance = totalIncome - totalExpense;
     totalBalanceEl.textContent = `₹${balance.toFixed(2)}`;
     totalIncomeEl.textContent = `₹${totalIncome.toFixed(2)}`;
     totalExpenseEl.textContent = `₹${totalExpense.toFixed(2)}`;
 }
 
-// 4. Function to delete a transaction by its position
+// Delete item
 function deleteTransaction(index) {
     transactions.splice(index, 1);
     updateLocalStorage();
     updateUI();
 }
 
-// 5. Form submission handler
+// Handle Form Submit
 form.addEventListener('submit', function (e) {
     e.preventDefault();
 
     const desc = descriptionInput.value.trim();
     const amount = parseFloat(amountInput.value);
+    const category = categorySelect.value;
     const type = typeSelect.value;
 
     if (!desc || isNaN(amount) || amount <= 0) return;
 
-    // Create a new transaction object
     const newTransaction = {
         description: desc,
         amount: amount,
+        category: category,
         type: type
     };
 
     transactions.push(newTransaction);
-
-    // Save and re-render
     updateLocalStorage();
     updateUI();
 
-    // Reset input fields
     form.reset();
 });
 
-// 6. Run initial update when the page loads
+// Initial load
 updateUI();
-
-  
