@@ -33,7 +33,7 @@
         <form id="transaction-form">
             <div class="form-group">
                 <label for="description">Description</label>
-                <input type="text" id="description" placeholder="e.g., Groceries, Salary, Coffee" required>
+                <input type="text" id="description" placeholder="e.g., Grocery, Salary, Coffee" required>
             </div>
 
             <div class="form-row">
@@ -43,10 +43,22 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category">
+                        <option value="Food & Dining">Food & Dining</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Bills & Utilities">Bills & Utilities</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Salary & Income">Salary & Income</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="type">Type</label>
                     <select id="type">
                         <option value="income">Income (+)</option>
-                        <option value="expense">Expense (-)</option>
+                        <option value="expense" selected>Expense (-)</option>
                     </select>
                 </div>
             </div>
@@ -60,6 +72,7 @@
             <thead>
                 <tr>
                     <th>Description</th>
+                    <th>Category</th>
                     <th>Type</th>
                     <th>Amount</th>
                     <th>Action</th>
