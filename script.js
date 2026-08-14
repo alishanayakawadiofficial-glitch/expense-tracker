@@ -1,7 +1,3 @@
-// State variables to track financials
-let totalIncome = 0;
-let totalExpense = 0;
-
 // Grab DOM elements
 const form = document.getElementById('transaction-form');
 const descriptionInput = document.getElementById('description');
@@ -13,18 +9,64 @@ const totalBalanceEl = document.getElementById('total-balance');
 const totalIncomeEl = document.getElementById('total-income');
 const totalExpenseEl = document.getElementById('total-expense');
 
-// Function to update the 3 summary cards
-function updateSummary() {
+// 1. Fetch saved transactions from LocalStorage (or default to empty list)
+let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+// 2. Function to save current transactions array to LocalStorage
+function updateLocalStorage() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
+// 3. Function to update UI and recalculate totals
+function updateUI() {
+    // Clear current list on screen
+    transactionList.innerHTML = '';
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach((transaction, index) => {
+        const amount = parseFloat(transaction.amount);
+        const row = document.createElement('tr');
+
+        if (transaction.type === 'income') {
+            totalIncome += amount;
+            row.innerHTML = `
+                <td>${transaction.description}</td>
+                <td><span class="badge-income">Income</span></td>
+                <td class="badge-income">+₹${amount.toFixed(2)}</td>
+                <td><button class="btn-delete" onclick="deleteTransaction(${index})">Delete</button></td>
+            `;
+        } else {
+            totalExpense += amount;
+            row.innerHTML = `
+                <td>${transaction.description}</td>
+                <td><span class="badge-expense">Expense</span></td>
+                <td class="badge-expense">-₹${amount.toFixed(2)}</td>
+                <td><button class="btn-delete" onclick="deleteTransaction(${index})">Delete</button></td>
+            `;
+        }
+
+        transactionList.appendChild(row);
+    });
+
+    // Update summary cards
     const balance = totalIncome - totalExpense;
-    
     totalBalanceEl.textContent = `₹${balance.toFixed(2)}`;
     totalIncomeEl.textContent = `₹${totalIncome.toFixed(2)}`;
     totalExpenseEl.textContent = `₹${totalExpense.toFixed(2)}`;
 }
 
-// Handle Form Submission
+// 4. Function to delete a transaction by its position
+function deleteTransaction(index) {
+    transactions.splice(index, 1);
+    updateLocalStorage();
+    updateUI();
+}
+
+// 5. Form submission handler
 form.addEventListener('submit', function (e) {
-    e.preventDefault(); // Prevent page reload
+    e.preventDefault();
 
     const desc = descriptionInput.value.trim();
     const amount = parseFloat(amountInput.value);
@@ -32,42 +74,24 @@ form.addEventListener('submit', function (e) {
 
     if (!desc || isNaN(amount) || amount <= 0) return;
 
-    // Create table row
-    const row = document.createElement('tr');
+    // Create a new transaction object
+    const newTransaction = {
+        description: desc,
+        amount: amount,
+        type: type
+    };
 
-    if (type === 'income') {
-        totalIncome += amount;
-        row.innerHTML = `
-            <td>${desc}</td>
-            <td><span class="badge-income">Income</span></td>
-            <td class="badge-income">+₹${amount.toFixed(2)}</td>
-            <td><button class="btn-delete">Delete</button></td>
-        `;
-    } else {
-        totalExpense += amount;
-        row.innerHTML = `
-            <td>${desc}</td>
-            <td><span class="badge-expense">Expense</span></td>
-            <td class="badge-expense">-₹${amount.toFixed(2)}</td>
-            <td><button class="btn-delete">Delete</button></td>
-        `;
-    }
+    transactions.push(newTransaction);
 
-    // Add row to table
-    transactionList.appendChild(row);
+    // Save and re-render
+    updateLocalStorage();
+    updateUI();
 
-    // Add delete functionality to the button
-    row.querySelector('.btn-delete').addEventListener('click', function () {
-        if (type === 'income') {
-            totalIncome -= amount;
-        } else {
-            totalExpense -= amount;
-        }
-        row.remove();
-        updateSummary();
-    });
-
-    // Reset Form & Update Cards
+    // Reset input fields
     form.reset();
-    updateSummary();
 });
+
+// 6. Run initial update when the page loads
+updateUI();
+
+  
